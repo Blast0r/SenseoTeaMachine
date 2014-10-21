@@ -14,7 +14,7 @@ I will try to update this repository in the next time also i will try to improve
 I have callibrated the Thermistor with a scetch provided by Adafruit. See this Repo for more information: https://github.com/tdicola/CloudThermometer
 
 ## Links
+* [http://mosfetkiller.de/?s=kaffeecontroller] good hardware information about the senseo. Controlling the pump and the heater with an arduino..
 
 ## Notice
-so english is not my native language. But because i want that as many people understand what i do, i want to write in english. 
-Please forgive me my mistakes
+English is not my native language. Please forgive me my mistakes!
