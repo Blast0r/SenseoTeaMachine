@@ -1,0 +1,20 @@
+Nummer 1)
+	Use these three coefficients in your thermistor sketch:
+	Coefficient A = 0.000934750556
+	Coefficient B = 0.000252318906
+	Coefficient C = 0.000000179789
+	
+	
+	
+2
+	Use these three coefficients in your thermistor sketch:
+Coefficient A = 0.000857108116
+Coefficient B = 0.000268916344
+Coefficient C = 0.000000095860
+
+
+
+
+#define     A 0.000857108116                      //Steinhart-Hart coefficients
+#define     B 0.000268916344
+#define     C 0.000000095860
