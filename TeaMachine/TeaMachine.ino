@@ -1,14 +1,13 @@
 
 #define     THERMISTOR_PIN     3       // Pin between the thermistor and 
                                        // series resistor.
-#define     BUTTON1_PIN        2       // Heizung/Hauptschalter
-#define     BUTTON2_PIN        3       //Pumpen
+#define     BUTTON1_PIN        2
 
 #define     PUMP_PIN           7       //Digital Pin, über den die Pumpe angesteuert werden kann
 #define     BOILER_PIN         8       //Digital Pin zum Ansprechen des Boilers
 #define     LED_PIN            6       //Digital Pin für Zustands LED
 
-#define     MAX_TEMP           70      //Abschalt-Temperatur in °C des Boilsers.. wir wollen das Sieden nicht riskieren
+#define     MAX_TEMP           33      //Abschalt-Temperatur in °C des Boilsers.. wir wollen das Sieden nicht riskieren
 
 #define     SERIES_RESISTOR    9875    // Series resistor value in ohms.
 
@@ -21,7 +20,7 @@
 #define     C     0.000000095860
 
 
-#define PUMP_TIME 21000 //zeit in ms um eine Tasse voll zu bekommen... überprüfen...
+#define PUMP_TIME 10000 //zeit in ms um eine Tasse voll zu bekommen... überprüfen...
 
 #define TempUnit "Celsius"
 
@@ -35,24 +34,21 @@ int button1_pressed;
 unsigned long startTime;
 boolean LED;
 boolean LED_ON;
-long lastButtonPress1; // zeit, wann der button das letzte mal gedrückt wurde?
-long lastButtonPress2;
-long tempMillis;
-long timeRound;
+long lastButtonPress; // zeit, wann der button das letzte mal gedrückt wurde?
+
+
 
 void setup() {
   Serial.begin(115200);
   analogReference(DEFAULT);
   pinMode(BUTTON1_PIN,INPUT_PULLUP);
-  pinMode(BUTTON2_PIN,INPUT_PULLUP);
   pinMode(PUMP_PIN,OUTPUT);
   pinMode(BOILER_PIN,OUTPUT);
   pinMode(LED_PIN, OUTPUT);
   digitalWrite(PUMP_PIN,LOW); //sicherheitshalber erstmal auf LOW schieben.
   digitalWrite(BOILER_PIN,LOW);
   digitalWrite(LED_PIN, LOW);
-  lastButtonPress1 = 0;
-  lastButtonPress2 = 0;
+  lastButtonPress = 0;
 }
 
 
@@ -71,8 +67,8 @@ void loop() {
   if (temp <= MAX_TEMP-0.25) LED = false;
   
   if (digitalRead(BUTTON1_PIN)==LOW){
-    tempMillis = millis();
-    if (tempMillis - BUTTON_TH > lastButtonPress1) { 
+    long tempMillis = millis();
+    if (tempMillis - BUTTON_TH > lastButtonPress) { 
       if (!temp_reached){
           if (heat){
             heat = false;
@@ -83,22 +79,11 @@ void loop() {
            }
           
       }
-    }
-    lastButtonPress1 = tempMillis;
-  }
-  
-  if (digitalRead(BUTTON2_PIN)==LOW){
-    tempMillis = millis();
-    if(tempMillis-BUTTON_TH > lastButtonPress2) {
-      if (doPump) {
-        doPump = false;
-        heat = false;
-      }
       else{
-        doPump = true;
-        }
+         doPump = true;
+      }
     }
-    lastButtonPress2= tempMillis;
+    lastButtonPress = tempMillis;
   }
     
   if (temp_reached && heating || !heat){
@@ -107,27 +92,21 @@ void loop() {
     digitalWrite(BOILER_PIN,LOW);
   }
   
-  if (heat && !(temp_reached) && !heating){
+  if (heat && !(temp_reached)){
     heating = true;
     digitalWrite(BOILER_PIN,HIGH); 
   }
 
 
-  if(doPump && !pumping && temp_reached) { //wenn wir pumpen sollen, dann wird die pumpe aktiviert, die startZeit gemerkt und die Pumpe eingeschaltet
-   // if(doPump && !pumping) { // for debug.. so kann die pumpe schon vor erreichen der Tempereatur eingestellt werden
+  if(doPump) { //wenn wir pumpen sollen, dann wird die pumpe aktiviert, die startZeit gemerkt und die Pumpe eingeschaltet
     pumping=true;
+    doPump=false;
     digitalWrite(PUMP_PIN,HIGH);
     startTime=millis();
    }
-   else if (!doPump && pumping){
-       pumping = false;
-       digitalWrite(PUMP_PIN,LOW);
-   }
-     
    
-   if (((pumping) && (millis() >= (startTime + PUMP_TIME)))) {
+   if ((pumping) && (millis() >= (startTime + PUMP_TIME))) {
      digitalWrite(PUMP_PIN,LOW);
-     doPump=false;
      pumping = false;
      heat=false;
      }
@@ -143,12 +122,10 @@ void loop() {
    
     
     
-  Serial.print(temp); Serial.print("C,P"); Serial.print(pumping); Serial.print(",H");Serial.print(heating); 
-  Serial.print(F(" T")); Serial.println(temp_reached);
-  //delay(100);
-  //long tempTime2 = micros();
-  //Serial.println(tempTime2-timeRound);
-  //timeRound = tempTime2;
+  Serial.print(F("Temperature: ")); Serial.print(temp); Serial.print(F(" in ")); Serial.println(TempUnit);
+  Serial.print(F("Pumping: ")); Serial.print(pumping); Serial.print(F(". heating: "));Serial.print(heating); 
+  Serial.print(F("Temp erreicht: ")); Serial.println(temp_reached); Serial.print(LED); Serial.println(LED_ON);
+  delay(10);
 }
 
 
